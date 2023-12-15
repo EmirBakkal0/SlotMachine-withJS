@@ -75,24 +75,78 @@ const getBet = (balance,lines) =>{
 const spin = () => {
     const symbols =[]
     for(const[symbol, count] of Object.entries(SYMBOLS_COUNT)){
-        for(let i=0; i< count; i++){
+        for(let i=0; i < count; i++){
             symbols.push(symbol);
         }
     }
-    const reels = [[],[],[]]
+    const reels = []
 
     for (let i = 0; i < COLS; i++) {
-        
+        reels.push([])
+        const reelSymbols = [...symbols]; /// "..." copies the symbols into the reelSymbols array
         for (let j = 0; j < ROWS; j++) {
+            let randomIndex = Math.floor(Math.random() * reelSymbols.length)
+            const selectedSymbol= reelSymbols[randomIndex];
+            reels[i].push(selectedSymbol);
+            reelSymbols.splice(randomIndex,1);;;
 
         }
         
     }
+    return reels;
 }
 
-spin()
+const transposeMatrix = (reels) =>{
+    const rows= [];
+
+    for (let i = 0; i < ROWS; i++) {
+        rows.push([]);
+        for(let j=0; j < COLS; j++ ){
+            rows[i].push(reels[j][i]);
+        }
+    }
+    return rows;
+}
+
+const printRows = (rows) =>{
+    for (const row of rows){
+        let rowStr=""
+        for (const[i,symbol] of row.entries()){
+            rowStr +=symbol
+            if(i != row.length-1){
+                rowStr+= " | "
+            }
+        }
+        console.log(rowStr)
+    }
+}
+
+function getWinnings(rows,bet,lines){
+    let winnings=0;
+    for (let row =0; row<lines; row++){
+        const symbols=rows[row];
+        let allSymbolsAreSame=true;
+        
+        for(const symbol of symbols){
+            if(symbol!= symbols[0]){
+                allSymbolsAreSame=false
+                break
+            }
+        }
+        if(allSymbolsAreSame){
+            winnings += bet * SYMBOLS_VALUES[symbols[0]]
+        }
+    }
+    return winnings;
+}
+
+
+//console.log(reels);
 let balance=deposit();
 const numberOfLines = getNumOfLines();
 const bet =getBet(balance,numberOfLines);
-
-
+const reels= spin()
+const rows= transposeMatrix(reels)
+printRows(rows);
+const winnings=getWinnings(rows,bet,numberOfLines)
+console.log("You won, $"+winnings.toString())
